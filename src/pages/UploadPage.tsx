@@ -151,7 +151,7 @@ export function UploadPage() {
               </p>
             </div>
 
-            <div className="upload-actions">
+            <div className="upload-actions" style={{ gap: '1rem' }}>
               <button type="button" className="primary-button" onClick={open} disabled={isProcessing}>
                 Choose PDF
               </button>
