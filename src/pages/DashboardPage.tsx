@@ -19,6 +19,7 @@ export function DashboardPage() {
     setClearing(true)
     try {
       await clearAllVisits()
+      localStorage.removeItem('doctor-prep-questions')
       setVisits([])
     } finally {
       setClearing(false)

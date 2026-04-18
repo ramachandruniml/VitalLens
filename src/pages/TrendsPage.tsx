@@ -20,6 +20,7 @@ export function TrendsPage() {
     setClearing(true)
     try {
       await clearAllVisits()
+      localStorage.removeItem('doctor-prep-questions')
       setTrends([])
     } finally {
       setClearing(false)
