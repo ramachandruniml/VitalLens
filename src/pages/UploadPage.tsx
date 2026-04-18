@@ -160,7 +160,6 @@ export function UploadPage() {
                   Analyze Lab Report
                 </button>
               )}
-              <span className="upload-note">Single PDF, max 25 MB, encrypted files unsupported</span>
             </div>
           </div>
         </article>
