@@ -8,11 +8,20 @@ export function DoctorPrepPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  async function load() {
+  async function load(force = false) {
+    if (!force) {
+      const cached = localStorage.getItem('doctor-prep-questions')
+      if (cached) {
+        setQuestions(JSON.parse(cached))
+        setLoading(false)
+        return
+      }
+    }
     setLoading(true)
     setError(null)
     try {
       const q = await generateDoctorQuestions()
+      localStorage.setItem('doctor-prep-questions', JSON.stringify(q))
       setQuestions(q)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
@@ -50,7 +59,7 @@ export function DoctorPrepPage() {
         <>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
             <button
-              onClick={load}
+              onClick={() => load(true)}
               style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: 'none', background: '#334155', color: '#f1f5f9', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
             >
               Regenerate
