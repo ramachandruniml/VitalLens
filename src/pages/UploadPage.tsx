@@ -15,7 +15,7 @@ const STATUS_LABELS: Record<PipelineState, string> = {
   idle: 'Waiting for file',
   selected: 'File ready',
   extracting: 'Extracting text from PDF…',
-  analyzing: 'Analyzing with Claude…',
+  analyzing: 'Analyzing…',
   saving: 'Saving to database…',
   done: 'Complete',
   error: 'Error',
