@@ -79,17 +79,21 @@ export function TrendCharts({ trends }: TrendChartsProps) {
                       boxShadow: '0 18px 40px rgba(14, 45, 58, 0.08)',
                     }}
                   />
-                  <ReferenceArea
-                    y1={firstPoint.low}
-                    y2={firstPoint.high}
-                    fill="rgba(34, 197, 94, 0.15)"
-                    stroke="rgba(34, 197, 94, 0.4)"
-                    strokeDasharray="4 4"
-                  />
-                  <ReferenceLine y={firstPoint.high} stroke="rgba(34, 197, 94, 0.5)" strokeDasharray="4 4">
-                    <Label value="Normal range" position="insideTopRight" fontSize={10} fill="rgba(34,197,94,0.8)" />
-                  </ReferenceLine>
-                  <ReferenceLine y={firstPoint.low} stroke="rgba(34, 197, 94, 0.5)" strokeDasharray="4 4" />
+                  {firstPoint.low != null && firstPoint.high != null && (
+                    <>
+                      <ReferenceArea
+                        y1={firstPoint.low}
+                        y2={firstPoint.high}
+                        fill="rgba(34, 197, 94, 0.15)"
+                        stroke="rgba(34, 197, 94, 0.4)"
+                        strokeDasharray="4 4"
+                      />
+                      <ReferenceLine y={firstPoint.high} stroke="rgba(34, 197, 94, 0.5)" strokeDasharray="4 4">
+                        <Label value="Normal range" position="insideTopRight" fontSize={10} fill="rgba(34,197,94,0.8)" />
+                      </ReferenceLine>
+                      <ReferenceLine y={firstPoint.low} stroke="rgba(34, 197, 94, 0.5)" strokeDasharray="4 4" />
+                    </>
+                  )}
                   <Line
                     type="monotone"
                     dataKey="value"
@@ -103,9 +107,11 @@ export function TrendCharts({ trends }: TrendChartsProps) {
             </div>
 
             <div className="trend-caption" style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginTop: '0.75rem' }}>
-              <p style={{ margin: 0 }}>
-                <strong>Normal range:</strong> {firstPoint.low} – {firstPoint.high} {trend.unit}
-              </p>
+              {firstPoint.low != null && firstPoint.high != null && (
+                <p style={{ margin: 0 }}>
+                  <strong>Normal range:</strong> {firstPoint.low} – {firstPoint.high} {trend.unit}
+                </p>
+              )}
               <p style={{ margin: 0 }}>
                 <strong>Latest reading:</strong> {lastPoint.value} {trend.unit}
               </p>

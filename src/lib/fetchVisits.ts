@@ -83,8 +83,8 @@ export async function fetchBiomarkerTrends(): Promise<BiomarkerTrend[]> {
       map.get(b.name)!.data.push({
         date: label,
         value: b.value,
-        low: b.reference_low ?? 0,
-        high: b.reference_high ?? 0,
+        low: b.reference_low ?? null,
+        high: b.reference_high ?? null,
       })
     }
   }

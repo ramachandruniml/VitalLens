@@ -12,8 +12,8 @@ export type BiomarkerResult = {
 export type BiomarkerTrendPoint = {
   date: string
   value: number
-  low: number
-  high: number
+  low: number | null
+  high: number | null
 }
 
 export type BiomarkerTrend = {
