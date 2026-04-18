@@ -15,6 +15,7 @@ type RawBiomarker = {
 type RawVisit = {
   id: string
   visit_date: string
+  created_at: string
   biomarkers: RawBiomarker[]
 }
 
@@ -24,12 +25,12 @@ function mapStatus(s: string): BiomarkerResult['status'] {
   return 'normal'
 }
 
-// Fetch all visits with their biomarkers, ordered by date
+// Orders by created_at so repeated same-PDF uploads get unique timestamps
 async function fetchAllVisits(): Promise<RawVisit[]> {
   const { data, error } = await supabase
     .from('visits')
-    .select('id, visit_date, biomarkers(*)')
-    .order('visit_date', { ascending: true })
+    .select('id, visit_date, created_at, biomarkers(*)')
+    .order('created_at', { ascending: true })
 
   if (error) throw error
   return (data as RawVisit[]) ?? []
@@ -52,6 +53,7 @@ export async function fetchLatestBiomarkers(): Promise<BiomarkerResult[]> {
 }
 
 // All biomarkers grouped by name as time-series for TrendCharts
+// Uses created_at date so each upload is a distinct point even if PDF date is the same
 export async function fetchBiomarkerTrends(): Promise<BiomarkerTrend[]> {
   const visits = await fetchAllVisits()
   if (!visits.length) return []
@@ -59,6 +61,8 @@ export async function fetchBiomarkerTrends(): Promise<BiomarkerTrend[]> {
   const map = new Map<string, BiomarkerTrend>()
 
   for (const visit of visits) {
+    const label = visit.created_at.slice(0, 10) // YYYY-MM-DD of upload time
+
     for (const b of visit.biomarkers) {
       if (!map.has(b.name)) {
         map.set(b.name, {
@@ -70,7 +74,7 @@ export async function fetchBiomarkerTrends(): Promise<BiomarkerTrend[]> {
         })
       }
       map.get(b.name)!.data.push({
-        date: visit.visit_date,
+        date: label,
         value: b.value,
         low: b.reference_low ?? 0,
         high: b.reference_high ?? 0,
