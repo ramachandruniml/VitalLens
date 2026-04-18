@@ -98,13 +98,6 @@ export function AppShell() {
       </header>
 
       <main className="content-area">
-        <div className="content-topbar">
-          <div>
-            <p className="eyebrow">Workspace</p>
-            <strong>Clinical review interface</strong>
-          </div>
-
-        </div>
         <Outlet />
       </main>
     </div>
