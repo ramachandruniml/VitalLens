@@ -1,0 +1,168 @@
+import { AlertCircle, FileText, Sparkles, UploadCloud, X } from 'lucide-react'
+import { useCallback, useState } from 'react'
+import { useDropzone } from 'react-dropzone'
+import { PageIntro } from '../components/PageIntro'
+
+type UploadState = 'idle' | 'selected' | 'error'
+
+const acceptedMime = {
+  'application/pdf': ['.pdf'],
+}
+
+export function UploadPage() {
+  const [uploadState, setUploadState] = useState<UploadState>('idle')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [statusMessage, setStatusMessage] = useState(
+    'Drop a PDF report to prepare it for backend integration.',
+  )
+
+  const handleDrop = useCallback((acceptedFiles: File[]) => {
+    const [file] = acceptedFiles
+
+    if (!file) {
+      return
+    }
+
+    setSelectedFile(file)
+    setUploadState('selected')
+    setStatusMessage('PDF selected. Ready for backend hookup.')
+  }, [])
+
+  const handleReject = useCallback(() => {
+    setSelectedFile(null)
+    setUploadState('error')
+    setStatusMessage('Only PDF files are supported in this upload UI.')
+  }, [])
+
+  const resetUpload = useCallback(() => {
+    setSelectedFile(null)
+    setUploadState('idle')
+    setStatusMessage('Drop a PDF report to prepare it for backend integration.')
+  }, [])
+
+  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
+    accept: acceptedMime,
+    maxFiles: 1,
+    multiple: false,
+    noClick: true,
+    onDropAccepted: handleDrop,
+    onDropRejected: handleReject,
+  })
+
+  return (
+    <section className="page-section">
+      <PageIntro
+        eyebrow="Upload"
+        title="Upload page setup"
+        description="UI-only PDF intake screen with drag-and-drop styling, local file selection, and validation messaging."
+      />
+
+      <div className="upload-hero">
+        <div>
+          <p className="eyebrow">Quick Start</p>
+          <h3>Select a patient PDF and hand it off to the future backend flow.</h3>
+        </div>
+        <div className="status-pill">
+          <Sparkles size={16} />
+          <span>UI only</span>
+        </div>
+      </div>
+
+      <div className="panel-grid panel-grid-wide upload-layout">
+        <article
+          {...getRootProps()}
+          className={[
+            'panel',
+            'upload-dropzone',
+            isDragActive ? ' upload-dropzone-active' : '',
+            uploadState === 'error' ? ' upload-dropzone-error' : '',
+            uploadState === 'selected' ? ' upload-dropzone-success' : '',
+          ].join('')}
+        >
+          <input {...getInputProps()} />
+
+          <div className="upload-dropzone-inner">
+            <div className="upload-icon-orb">
+              {uploadState === 'error' ? (
+                <AlertCircle size={30} />
+              ) : uploadState === 'selected' ? (
+                <FileText size={30} />
+              ) : (
+                <UploadCloud size={30} />
+              )}
+            </div>
+
+            <div className="upload-copy">
+              <h3>
+                {uploadState === 'selected'
+                  ? 'PDF selected'
+                  : uploadState === 'error'
+                    ? 'Upload needs attention'
+                    : 'Drag and drop your PDF here'}
+              </h3>
+              <p>{statusMessage}</p>
+            </div>
+
+            <div className="upload-actions">
+              <button type="button" className="primary-button" onClick={open}>
+                Choose PDF
+              </button>
+              <span className="upload-note">Single PDF, max 25 MB, encrypted files unsupported</span>
+            </div>
+          </div>
+        </article>
+
+        <aside className="panel upload-side-panel">
+          <div className="upload-side-header">
+            <h3>Upload Status</h3>
+            {selectedFile ? (
+              <button type="button" className="ghost-button" onClick={resetUpload}>
+                <X size={16} />
+                Clear
+              </button>
+            ) : null}
+          </div>
+
+          <div className="file-chip">
+            <FileText size={18} />
+            <div>
+              <strong>{selectedFile ? selectedFile.name : 'No file selected yet'}</strong>
+              <span>
+                {selectedFile
+                  ? `${Math.max(selectedFile.size / 1024 / 1024, 0.1).toFixed(1)} MB PDF`
+                  : 'Select a PDF to preview file details here'}
+              </span>
+            </div>
+          </div>
+
+          <div className="upload-state-card">
+            <span className={`state-dot state-dot-${uploadState}`} />
+            <div>
+              <strong>
+                {uploadState === 'idle'
+                  ? 'Waiting for file'
+                  : uploadState === 'selected'
+                    ? 'File ready'
+                    : 'Validation error'}
+              </strong>
+              <p>{statusMessage}</p>
+            </div>
+          </div>
+
+          <div className="panel dashboard-shell-panel">
+            <p className="eyebrow">Backend Placeholder</p>
+            <h3>Submission area</h3>
+            <p>This panel is reserved for your teammate’s upload request, progress state, and server response handling.</p>
+          </div>
+
+          {uploadState === 'error' ? (
+            <div className="error-banner" role="alert">
+              <AlertCircle size={18} />
+              <p>Only PDF selection is handled here right now. No upload request is being sent.</p>
+            </div>
+          ) : null}
+        </aside>
+      </div>
+    </section>
+  )
+}
