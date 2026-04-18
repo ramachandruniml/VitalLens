@@ -25,6 +25,7 @@ export async function saveVisit(
       reference_high: b.reference_high,
       status: b.status,
       explanation: b.explanation,
+      category: b.category ?? 'General',
     }))
   )
 

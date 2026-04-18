@@ -10,7 +10,7 @@ export function DashboardPage() {
 
   useEffect(() => {
     fetchAllVisitsGrouped()
-      .then(v => setVisits(v.slice().reverse())) // newest first
+      .then(v => setVisits(v.slice().reverse()))
       .finally(() => setLoading(false))
   }, [])
 
@@ -38,7 +38,7 @@ export function DashboardPage() {
         <article className="panel dashboard-shell-panel dashboard-shell-hero">
           <p className="eyebrow">Overview</p>
           <h3>{visits.length} report{visits.length !== 1 ? 's' : ''} uploaded</h3>
-          <p>Each upload is shown below with its biomarkers.</p>
+          <p>Each upload is shown below grouped by category.</p>
           {visits.length > 0 && (
             <button
               onClick={handleClear}
@@ -61,18 +61,22 @@ export function DashboardPage() {
         </article>
 
         {loading ? (
-          <div className="panel biomarker-card" style={{ color: '#94a3b8', padding: '2rem' }}>
-            Loading…
-          </div>
+          <div className="panel biomarker-card" style={{ color: '#94a3b8', padding: '2rem' }}>Loading…</div>
         ) : visits.length === 0 ? (
-          <div className="panel biomarker-card" style={{ color: '#94a3b8', padding: '2rem' }}>
-            No reports uploaded yet.
-          </div>
+          <div className="panel biomarker-card" style={{ color: '#94a3b8', padding: '2rem' }}>No reports uploaded yet.</div>
         ) : (
           visits.map(visit => (
             <div key={visit.id}>
-              <p className="eyebrow" style={{ margin: '1.5rem 0 0.5rem' }}>{visit.label}</p>
-              <BiomarkerCards biomarkers={visit.biomarkers} />
+              <p className="eyebrow" style={{ margin: '1.5rem 0 0.25rem' }}>{visit.label}</p>
+              {visit.categories.map(cat => (
+                <div key={cat.category} style={{ marginBottom: '1.5rem' }}>
+                  <div style={{ marginBottom: '0.5rem' }}>
+                    <strong style={{ fontSize: '1rem' }}>{cat.category}</strong>
+                    <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '0.15rem 0 0' }}>{cat.description}</p>
+                  </div>
+                  <BiomarkerCards biomarkers={cat.biomarkers} />
+                </div>
+              ))}
             </div>
           ))
         )}

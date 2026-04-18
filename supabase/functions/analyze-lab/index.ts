@@ -7,7 +7,7 @@ const CORS = {
 
 const PROMPT = `Extract every biomarker from this lab report. Return ONLY a raw JSON array — no markdown, no explanation.
 
-Each object: name (string), value (number), unit (string), reference_low (number|null), reference_high (number|null), status ("normal"|"high"|"low"), explanation (one plain-English sentence a patient can understand).`
+Each object: name (string), value (number), unit (string), reference_low (number|null), reference_high (number|null), status ("normal"|"high"|"low"), explanation (one plain-English sentence a patient can understand), category (string — the medical section this belongs to, e.g. "Hematology", "Liver Function", "Kidney Function", "Thyroid Function", "Lipid Panel", "Electrolytes", "Biochemistry", "Diabetes", "Vitamins", or "General").`
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })

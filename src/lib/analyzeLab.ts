@@ -8,6 +8,7 @@ export type Biomarker = {
   reference_high: number | null
   status: 'normal' | 'high' | 'low'
   explanation: string
+  category: string
 }
 
 export async function analyzeLab(extracted: ExtractResult): Promise<Biomarker[]> {

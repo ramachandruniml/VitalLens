@@ -10,6 +10,7 @@ type RawBiomarker = {
   reference_high: number | null
   status: string
   explanation: string
+  category: string
 }
 
 type RawVisit = {
@@ -85,27 +86,57 @@ export async function fetchBiomarkerTrends(): Promise<BiomarkerTrend[]> {
   return Array.from(map.values())
 }
 
-// All visits with their biomarkers for the dashboard history view
+export type CategoryGroup = {
+  category: string
+  description: string
+  biomarkers: BiomarkerResult[]
+}
+
 export type VisitGroup = {
   id: string
   label: string
-  biomarkers: BiomarkerResult[]
+  categories: CategoryGroup[]
+}
+
+const CATEGORY_DESCRIPTIONS: Record<string, string> = {
+  'Hematology': 'Measures your blood cells — red cells carry oxygen, white cells fight infection, and platelets help clotting.',
+  'Biochemistry': 'Key chemical markers that reflect how your organs and metabolism are functioning.',
+  'Liver Function': 'Shows how well your liver is filtering toxins, producing proteins, and processing nutrients.',
+  'Kidney Function': 'Measures how effectively your kidneys are filtering waste and balancing fluids.',
+  'Electrolytes': 'Essential minerals that regulate fluid balance, nerve signals, and muscle function.',
+  'Thyroid Function': 'Assesses how well your thyroid is regulating your metabolism and energy levels.',
+  'Lipid Panel': 'Measures fats in your blood that influence your risk of heart disease.',
+  'Diabetes': 'Tracks blood sugar levels to screen for or monitor diabetes.',
+  'Vitamins': 'Checks key vitamin levels your body needs for energy, immunity, and cell repair.',
+  'General': 'Additional lab markers from your report.',
 }
 
 export async function fetchAllVisitsGrouped(): Promise<VisitGroup[]> {
   const visits = await fetchAllVisits()
-  return visits.map((visit, i) => ({
-    id: visit.id,
-    label: `Upload ${i + 1} — ${visit.created_at.slice(0, 10)}`,
-    biomarkers: visit.biomarkers.map(b => ({
-      id: b.id,
-      name: b.name,
-      value: String(b.value),
-      unit: b.unit,
-      status: mapStatus(b.status),
-      explanation: b.explanation,
-    })),
-  }))
+  return visits.map((visit, i) => {
+    const categoryMap = new Map<string, BiomarkerResult[]>()
+    for (const b of visit.biomarkers) {
+      const cat = b.category || 'General'
+      if (!categoryMap.has(cat)) categoryMap.set(cat, [])
+      categoryMap.get(cat)!.push({
+        id: b.id,
+        name: b.name,
+        value: String(b.value),
+        unit: b.unit,
+        status: mapStatus(b.status),
+        explanation: b.explanation,
+      })
+    }
+    return {
+      id: visit.id,
+      label: `Upload ${i + 1} — ${visit.created_at.slice(0, 10)}`,
+      categories: Array.from(categoryMap.entries()).map(([category, biomarkers]) => ({
+        category,
+        description: CATEGORY_DESCRIPTIONS[category] ?? 'Lab markers from your report.',
+        biomarkers,
+      })),
+    }
+  })
 }
 
 // Delete all visits (and their biomarkers) for the current user
