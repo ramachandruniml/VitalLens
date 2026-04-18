@@ -1,6 +1,8 @@
 import { supabase } from './supabase'
 
-export async function generateDoctorQuestions(): Promise<string[]> {
+export type DoctorQuestion = { question: string; tag: string }
+
+export async function generateDoctorQuestions(): Promise<DoctorQuestion[]> {
   // Fetch raw biomarkers from latest visit (preserving real 'high'/'low'/'normal' status)
   const { data: visits, error } = await supabase
     .from('visits')
@@ -27,5 +29,5 @@ export async function generateDoctorQuestions(): Promise<string[]> {
 
   if (!res.ok) throw new Error(`Doctor prep error ${res.status}: ${await res.text()}`)
   const { questions } = await res.json()
-  return questions as string[]
+  return questions as DoctorQuestion[]
 }

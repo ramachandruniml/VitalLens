@@ -14,7 +14,7 @@ serve(async (req) => {
 
   if (concerning.length === 0) {
     return new Response(
-      JSON.stringify({ questions: ['All your biomarkers are in the normal range. Ask your doctor if there is anything to watch going forward.'] }),
+      JSON.stringify({ questions: [{ question: 'All your biomarkers are in the normal range. Ask your doctor if there is anything to watch going forward.', tag: 'General' }] }),
       { headers: { ...CORS, 'Content-Type': 'application/json' } }
     )
   }
@@ -37,14 +37,14 @@ serve(async (req) => {
       max_tokens: 1024,
       messages: [{
         role: 'user',
-        content: `A patient has the following concerning lab results:\n\n${summary}\n\nGenerate 5–7 clear, specific questions the patient should ask their doctor at their next visit. Focus on what these results mean, what could be causing them, and what next steps to take. Return ONLY a JSON array of question strings — no markdown, no explanation.`,
+        content: `A patient has the following concerning lab results:\n\n${summary}\n\nGenerate 5–7 clear, specific questions the patient should ask their doctor at their next visit. Focus on what these results mean, what could be causing them, and what next steps to take.\n\nReturn ONLY a JSON array of objects — no markdown, no explanation. Each object: { "question": string, "tag": string } where tag is the short biomarker name this question refers to (e.g. "HbA1c", "Glucose", "TSH").`,
       }],
     }),
   })
 
   const data = await res.json()
   const raw = (data.content[0].text as string).trim().replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
-  const questions: string[] = JSON.parse(raw)
+  const questions: { question: string; tag: string }[] = JSON.parse(raw)
 
   return new Response(JSON.stringify({ questions }), {
     headers: { ...CORS, 'Content-Type': 'application/json' },

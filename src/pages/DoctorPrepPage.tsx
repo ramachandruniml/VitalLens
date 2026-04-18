@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { DoctorPrepList } from '../components/DoctorPrepList'
 import { PageIntro } from '../components/PageIntro'
-import { generateDoctorQuestions } from '../lib/generateQuestions'
+import { generateDoctorQuestions, type DoctorQuestion } from '../lib/generateQuestions'
 
 export function DoctorPrepPage() {
-  const [questions, setQuestions] = useState<string[]>([])
+  const [questions, setQuestions] = useState<DoctorQuestion[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 

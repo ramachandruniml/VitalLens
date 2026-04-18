@@ -1,21 +1,15 @@
 import { Copy, Printer } from 'lucide-react'
+import type { DoctorQuestion } from '../lib/generateQuestions'
 
 type DoctorPrepListProps = {
-  questions: string[]
+  questions: DoctorQuestion[]
 }
 
 export function DoctorPrepList({ questions }: DoctorPrepListProps) {
   const copyQuestions = async () => {
-    if (questions.length === 0) {
-      return
-    }
-
-    if (!navigator.clipboard) {
-      return
-    }
-
+    if (!questions.length || !navigator.clipboard) return
     await navigator.clipboard.writeText(
-      questions.map((question, index) => `${index + 1}. ${question}`).join('\n'),
+      questions.map((q, i) => `${i + 1}. ${q.question}`).join('\n'),
     )
   }
 
@@ -46,10 +40,25 @@ export function DoctorPrepList({ questions }: DoctorPrepListProps) {
             <p>No questions available.</p>
           </article>
         ) : (
-          questions.map((question, index) => (
-            <article key={question} className="panel doctor-question-card">
+          questions.map((q, index) => (
+            <article key={index} className="panel doctor-question-card">
               <span className="question-index">{index + 1}</span>
-              <p>{question}</p>
+              <div>
+                <span style={{
+                  display: 'inline-block',
+                  marginBottom: '0.4rem',
+                  padding: '2px 10px',
+                  borderRadius: '999px',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  background: '#0c4a6e',
+                  color: '#7dd3fc',
+                  letterSpacing: '0.03em',
+                }}>
+                  {q.tag}
+                </span>
+                <p style={{ margin: 0 }}>{q.question}</p>
+              </div>
             </article>
           ))
         )}
