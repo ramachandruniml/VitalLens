@@ -103,7 +103,7 @@ export function AppShell() {
             <p className="eyebrow">Workspace</p>
             <strong>Clinical review interface</strong>
           </div>
-          <div className="topbar-badge">Professional prototype</div>
+
         </div>
         <Outlet />
       </main>
