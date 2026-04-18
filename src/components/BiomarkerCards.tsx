@@ -1,4 +1,10 @@
+import { Volume2 } from 'lucide-react'
 import type { BiomarkerResult } from '../types/biomarkers'
+
+function speak(text: string) {
+  window.speechSynthesis.cancel()
+  window.speechSynthesis.speak(new SpeechSynthesisUtterance(text))
+}
 
 type BiomarkerCardsProps = {
   biomarkers: BiomarkerResult[]
@@ -41,7 +47,16 @@ export function BiomarkerCards({ biomarkers }: BiomarkerCardsProps) {
           <div className="biomarker-card-head">
             <div>
               <p className="eyebrow">Biomarker</p>
-              <h3>{biomarker.name}</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <h3 style={{ margin: 0 }}>{biomarker.name}</h3>
+                <button
+                  onClick={() => speak(biomarker.name)}
+                  title={`Pronounce ${biomarker.name}`}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', color: '#94a3b8', display: 'flex', alignItems: 'center' }}
+                >
+                  <Volume2 size={15} />
+                </button>
+              </div>
             </div>
             <span className={`status-badge status-badge-${biomarker.status}`}>
               {statusLabels[biomarker.status]}
