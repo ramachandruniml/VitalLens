@@ -54,7 +54,7 @@ export function BiomarkerCards({ biomarkers }: BiomarkerCardsProps) {
                   title={`Pronounce ${biomarker.name}`}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', color: '#94a3b8', display: 'flex', alignItems: 'center' }}
                 >
-                  <Volume2 size={15} />
+                  <Volume2 size={20} />
                 </button>
               </div>
             </div>
