@@ -12,7 +12,7 @@ export async function generateDoctorQuestions(): Promise<string[]> {
       headers: {
         'Content-Type': 'application/json',
         apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
       },
       body: JSON.stringify({ biomarkers }),
     }
