@@ -51,6 +51,12 @@ export function TrendCharts({ trends }: TrendChartsProps) {
         const firstPoint = trend.data[0]
         const lastPoint = trend.data[trend.data.length - 1]
 
+        const allValues = trend.data.map(d => d.value)
+        const refLow = firstPoint.low
+        const refHigh = firstPoint.high
+        const yMin = Math.min(...allValues, refLow ?? Infinity) * 0.9
+        const yMax = Math.max(...allValues, refHigh ?? -Infinity) * 1.1
+
         return (
           <article key={trend.id} className="panel trend-card">
             <div className="trend-card-head">
@@ -71,7 +77,7 @@ export function TrendCharts({ trends }: TrendChartsProps) {
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(16, 33, 44, 0.08)" />
                   <XAxis dataKey="date" tickLine={false} axisLine={false} fontSize={12} />
-                  <YAxis tickLine={false} axisLine={false} fontSize={12} width={42} />
+                  <YAxis tickLine={false} axisLine={false} fontSize={12} width={42} domain={[yMin, yMax]} />
                   <Tooltip
                     contentStyle={{
                       borderRadius: '16px',
