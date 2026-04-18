@@ -89,14 +89,14 @@ export function UploadPage() {
     <section className="page-section">
       <PageIntro
         eyebrow="Upload"
-        title="Upload Lab Report"
-        description="Drop a PDF lab report and VitalLens will extract, analyze, and save your biomarkers automatically."
+        title="Upload report"
+        description="Secure intake for clinical PDF files."
       />
 
       <div className="upload-hero">
         <div>
-          <p className="eyebrow">Quick Start</p>
-          <h3>Select a patient PDF and run the analysis pipeline.</h3>
+          <p className="eyebrow">Intake</p>
+          <h3>Upload a patient report.</h3>
         </div>
         <div className="status-pill">
           <Sparkles size={16} />
@@ -160,16 +160,18 @@ export function UploadPage() {
                   Analyze Lab Report
                 </button>
               )}
+              <span className="upload-note">Single PDF, max 25 MB, encrypted files unsupported</span>
             </div>
           </div>
         </article>
 
         <aside className="panel upload-side-panel">
           <div className="upload-side-header">
-            <h3>Upload Status</h3>
+            <h3>Upload status</h3>
             {selectedFile && !isProcessing && (
               <button type="button" className="ghost-button" onClick={reset}>
-                <X size={16} /> Clear
+                <X size={16} />
+                Clear
               </button>
             )}
           </div>
@@ -177,11 +179,11 @@ export function UploadPage() {
           <div className="file-chip">
             <FileText size={18} />
             <div>
-              <strong>{selectedFile ? selectedFile.name : 'No file selected yet'}</strong>
+              <strong>{selectedFile ? selectedFile.name : 'No file selected'}</strong>
               <span>
                 {selectedFile
                   ? `${Math.max(selectedFile.size / 1024 / 1024, 0.1).toFixed(1)} MB PDF`
-                  : 'Select a PDF to preview file details here'}
+                  : 'No file selected'}
               </span>
             </div>
           </div>

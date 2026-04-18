@@ -1,34 +1,26 @@
+import { BiomarkerCards } from '../components/BiomarkerCards'
 import { PageIntro } from '../components/PageIntro'
+import type { BiomarkerResult } from '../types/biomarkers'
+
+const biomarkers: BiomarkerResult[] = []
 
 export function DashboardPage() {
   return (
     <section className="page-section">
       <PageIntro
         eyebrow="Dashboard"
-        title="Dashboard setup"
-        description="Clean page structure for future summary cards, activity feeds, and backend-connected widgets."
+        title="Biomarker dashboard"
+        description="A structured view for biomarker results and clinical summaries."
       />
 
       <div className="dashboard-shell">
-        <article className="panel dashboard-shell-panel">
-          <p className="eyebrow">Top Section</p>
-          <h3>Summary area</h3>
-          <p>This space is ready for overview cards or status modules.</p>
+        <article className="panel dashboard-shell-panel dashboard-shell-hero">
+          <p className="eyebrow">Overview</p>
+          <h3>Biomarker results</h3>
+          <p>Clinical metrics and interpretation.</p>
         </article>
 
-        <div className="panel-grid dashboard-shell-grid">
-          <article className="panel dashboard-shell-panel">
-            <p className="eyebrow">Left Column</p>
-            <h3>Main content area</h3>
-            <p>Reserved for recent uploads, results, or dashboard content.</p>
-          </article>
-
-          <article className="panel dashboard-shell-panel">
-            <p className="eyebrow">Right Column</p>
-            <h3>Side panel area</h3>
-            <p>Reserved for quick actions, filters, or account-related modules.</p>
-          </article>
-        </div>
+        <BiomarkerCards biomarkers={biomarkers} />
       </div>
     </section>
   )

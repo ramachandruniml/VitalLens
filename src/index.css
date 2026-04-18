@@ -1,18 +1,16 @@
 :root {
-  --text: #52636d;
-  --text-h: #10212c;
-  --bg: #edf4f5;
-  --border: rgba(16, 33, 44, 0.08);
-  --sidebar-bg: #08212d;
-  --shadow:
-    0 28px 70px rgba(14, 45, 58, 0.08), 0 12px 28px rgba(14, 45, 58, 0.06);
+  --text: #5a5d6d;
+  --text-h: #10121c;
+  --bg: #fbfaf8;
+  --border: rgba(16, 18, 28, 0.08);
+  --shadow: 0 24px 60px rgba(16, 18, 28, 0.08);
 
-  --sans: 'Aptos', 'Segoe UI', sans-serif;
-  --heading: 'Iowan Old Style', 'Palatino Linotype', serif;
+  --sans: 'Aptos', 'Helvetica Neue', Arial, sans-serif;
+  --heading: 'Aptos', 'Helvetica Neue', Arial, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 
-  font: 18px/1.45 var(--sans);
-  letter-spacing: 0.01em;
+  font: 18px/1.5 var(--sans);
+  letter-spacing: -0.01em;
   color: var(--text);
   background: var(--bg);
   font-synthesis: none;
@@ -31,21 +29,19 @@
 body {
   margin: 0;
   min-width: 320px;
-  background:
-    radial-gradient(circle at top, rgba(137, 208, 199, 0.22), transparent 24%),
-    var(--bg);
+  background: var(--bg);
 }
 
 h1,
 h2,
 h3 {
   font-family: var(--heading);
-  font-weight: 700;
+  font-weight: 500;
   color: var(--text-h);
 }
 
 h1 {
-  letter-spacing: -0.04em;
+  letter-spacing: -0.06em;
 }
 
 p {
