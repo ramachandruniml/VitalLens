@@ -95,10 +95,14 @@ export function TrendCharts({ trends }: TrendChartsProps) {
               </ResponsiveContainer>
             </div>
 
-            <p className="trend-caption">
-              Normal reference band shown between {firstPoint.low} and {firstPoint.high}{' '}
-              {trend.unit}. Latest reading: {lastPoint.value} {trend.unit}.
-            </p>
+            <div className="trend-caption" style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginTop: '0.75rem' }}>
+              <p style={{ margin: 0 }}>
+                <strong>Normal range:</strong> {firstPoint.low} – {firstPoint.high} {trend.unit}
+              </p>
+              <p style={{ margin: 0 }}>
+                <strong>Latest reading:</strong> {lastPoint.value} {trend.unit}
+              </p>
+            </div>
           </article>
         )
       })}
