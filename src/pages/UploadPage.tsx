@@ -1,43 +1,52 @@
-import { AlertCircle, FileText, Sparkles, UploadCloud, X } from 'lucide-react'
+import { AlertCircle, CheckCircle, FileText, Loader2, Sparkles, UploadCloud, X } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { PageIntro } from '../components/PageIntro'
+import { analyzeLab, type Biomarker } from '../lib/analyzeLab'
+import { extractTextFromPDF } from '../lib/extractText'
+import { saveVisit } from '../lib/saveVisit'
+import { supabase } from '../lib/supabase'
 
-type UploadState = 'idle' | 'selected' | 'error'
+type PipelineState = 'idle' | 'selected' | 'extracting' | 'analyzing' | 'saving' | 'done' | 'error'
 
-const acceptedMime = {
-  'application/pdf': ['.pdf'],
+const acceptedMime = { 'application/pdf': ['.pdf'] }
+
+const STATUS_LABELS: Record<PipelineState, string> = {
+  idle: 'Waiting for file',
+  selected: 'File ready',
+  extracting: 'Extracting text from PDF…',
+  analyzing: 'Analyzing with Claude…',
+  saving: 'Saving to database…',
+  done: 'Complete',
+  error: 'Error',
 }
 
 export function UploadPage() {
-  const [uploadState, setUploadState] = useState<UploadState>('idle')
+  const [state, setState] = useState<PipelineState>('idle')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [statusMessage, setStatusMessage] = useState(
-    'Drop a PDF report to prepare it for backend integration.',
-  )
+  const [biomarkers, setBiomarkers] = useState<Biomarker[]>([])
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   const handleDrop = useCallback((acceptedFiles: File[]) => {
     const [file] = acceptedFiles
-
-    if (!file) {
-      return
-    }
-
+    if (!file) return
     setSelectedFile(file)
-    setUploadState('selected')
-    setStatusMessage('PDF selected. Ready for backend hookup.')
+    setState('selected')
+    setErrorMsg(null)
+    setBiomarkers([])
   }, [])
 
   const handleReject = useCallback(() => {
     setSelectedFile(null)
-    setUploadState('error')
-    setStatusMessage('Only PDF files are supported in this upload UI.')
+    setState('error')
+    setErrorMsg('Only PDF files are supported.')
   }, [])
 
-  const resetUpload = useCallback(() => {
+  const reset = useCallback(() => {
     setSelectedFile(null)
-    setUploadState('idle')
-    setStatusMessage('Drop a PDF report to prepare it for backend integration.')
+    setState('idle')
+    setErrorMsg(null)
+    setBiomarkers([])
   }, [])
 
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
@@ -49,22 +58,49 @@ export function UploadPage() {
     onDropRejected: handleReject,
   })
 
+  async function runPipeline() {
+    if (!selectedFile) return
+    setErrorMsg(null)
+
+    try {
+      setState('extracting')
+      const extracted = await extractTextFromPDF(selectedFile)
+
+      setState('analyzing')
+      const results = await analyzeLab(extracted)
+
+      setState('saving')
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not logged in')
+      const rawText = extracted.type === 'text' ? extracted.text : '[image-based PDF]'
+      await saveVisit(user.id, rawText, extracted.date, results)
+
+      setBiomarkers(results)
+      setState('done')
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'Something went wrong')
+      setState('error')
+    }
+  }
+
+  const isProcessing = ['extracting', 'analyzing', 'saving'].includes(state)
+
   return (
     <section className="page-section">
       <PageIntro
         eyebrow="Upload"
-        title="Upload page setup"
-        description="UI-only PDF intake screen with drag-and-drop styling, local file selection, and validation messaging."
+        title="Upload Lab Report"
+        description="Drop a PDF lab report and VitalLens will extract, analyze, and save your biomarkers automatically."
       />
 
       <div className="upload-hero">
         <div>
           <p className="eyebrow">Quick Start</p>
-          <h3>Select a patient PDF and hand it off to the future backend flow.</h3>
+          <h3>Select a patient PDF and run the analysis pipeline.</h3>
         </div>
         <div className="status-pill">
           <Sparkles size={16} />
-          <span>UI only</span>
+          <span>{STATUS_LABELS[state]}</span>
         </div>
       </div>
 
@@ -75,17 +111,21 @@ export function UploadPage() {
             'panel',
             'upload-dropzone',
             isDragActive ? ' upload-dropzone-active' : '',
-            uploadState === 'error' ? ' upload-dropzone-error' : '',
-            uploadState === 'selected' ? ' upload-dropzone-success' : '',
+            state === 'error' ? ' upload-dropzone-error' : '',
+            state === 'selected' || state === 'done' ? ' upload-dropzone-success' : '',
           ].join('')}
         >
           <input {...getInputProps()} />
 
           <div className="upload-dropzone-inner">
             <div className="upload-icon-orb">
-              {uploadState === 'error' ? (
+              {state === 'error' ? (
                 <AlertCircle size={30} />
-              ) : uploadState === 'selected' ? (
+              ) : state === 'done' ? (
+                <CheckCircle size={30} />
+              ) : isProcessing ? (
+                <Loader2 size={30} className="spin" />
+              ) : state === 'selected' ? (
                 <FileText size={30} />
               ) : (
                 <UploadCloud size={30} />
@@ -94,20 +134,32 @@ export function UploadPage() {
 
             <div className="upload-copy">
               <h3>
-                {uploadState === 'selected'
-                  ? 'PDF selected'
-                  : uploadState === 'error'
-                    ? 'Upload needs attention'
-                    : 'Drag and drop your PDF here'}
+                {state === 'done'
+                  ? 'Analysis complete'
+                  : state === 'error'
+                    ? 'Something went wrong'
+                    : isProcessing
+                      ? STATUS_LABELS[state]
+                      : state === 'selected'
+                        ? 'PDF selected'
+                        : 'Drag and drop your PDF here'}
               </h3>
-              <p>{statusMessage}</p>
+              <p>
+                {state === 'done'
+                  ? `${biomarkers.length} biomarkers saved to your account.`
+                  : errorMsg ?? 'Single PDF, max 25 MB, encrypted files unsupported'}
+              </p>
             </div>
 
             <div className="upload-actions">
-              <button type="button" className="primary-button" onClick={open}>
+              <button type="button" className="primary-button" onClick={open} disabled={isProcessing}>
                 Choose PDF
               </button>
-              <span className="upload-note">Single PDF, max 25 MB, encrypted files unsupported</span>
+              {state === 'selected' && (
+                <button type="button" className="primary-button" onClick={runPipeline}>
+                  Analyze Lab Report
+                </button>
+              )}
             </div>
           </div>
         </article>
@@ -115,12 +167,11 @@ export function UploadPage() {
         <aside className="panel upload-side-panel">
           <div className="upload-side-header">
             <h3>Upload Status</h3>
-            {selectedFile ? (
-              <button type="button" className="ghost-button" onClick={resetUpload}>
-                <X size={16} />
-                Clear
+            {selectedFile && !isProcessing && (
+              <button type="button" className="ghost-button" onClick={reset}>
+                <X size={16} /> Clear
               </button>
-            ) : null}
+            )}
           </div>
 
           <div className="file-chip">
@@ -136,31 +187,47 @@ export function UploadPage() {
           </div>
 
           <div className="upload-state-card">
-            <span className={`state-dot state-dot-${uploadState}`} />
+            <span className={`state-dot state-dot-${state === 'done' ? 'selected' : state === 'error' ? 'error' : state === 'idle' ? 'idle' : 'selected'}`} />
             <div>
-              <strong>
-                {uploadState === 'idle'
-                  ? 'Waiting for file'
-                  : uploadState === 'selected'
-                    ? 'File ready'
-                    : 'Validation error'}
-              </strong>
-              <p>{statusMessage}</p>
+              <strong>{STATUS_LABELS[state]}</strong>
+              {isProcessing && <p>This may take a few seconds…</p>}
+              {state === 'done' && <p>{biomarkers.length} biomarkers extracted and saved.</p>}
+              {errorMsg && <p style={{ color: '#f87171' }}>{errorMsg}</p>}
             </div>
           </div>
 
-          <div className="panel dashboard-shell-panel">
-            <p className="eyebrow">Backend Placeholder</p>
-            <h3>Submission area</h3>
-            <p>This panel is reserved for your teammate’s upload request, progress state, and server response handling.</p>
-          </div>
+          {state === 'done' && biomarkers.length > 0 && (
+            <div className="panel" style={{ marginTop: '0.75rem', maxHeight: 320, overflowY: 'auto' }}>
+              <p className="eyebrow" style={{ marginBottom: '0.5rem' }}>Results</p>
+              {biomarkers.map((b, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.4rem 0', borderBottom: '1px solid #1e293b' }}>
+                  <div>
+                    <strong style={{ fontSize: '0.9rem' }}>{b.name}</strong>
+                    <span style={{ marginLeft: '0.5rem', color: '#94a3b8', fontSize: '0.8rem' }}>
+                      {b.value} {b.unit}
+                    </span>
+                  </div>
+                  <span style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    padding: '2px 8px',
+                    borderRadius: '999px',
+                    background: b.status === 'normal' ? '#14532d' : '#7f1d1d',
+                    color: b.status === 'normal' ? '#4ade80' : '#f87171',
+                  }}>
+                    {b.status.toUpperCase()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
 
-          {uploadState === 'error' ? (
+          {state === 'error' && (
             <div className="error-banner" role="alert">
               <AlertCircle size={18} />
-              <p>Only PDF selection is handled here right now. No upload request is being sent.</p>
+              <p>{errorMsg ?? 'An unexpected error occurred.'}</p>
             </div>
-          ) : null}
+          )}
         </aside>
       </div>
     </section>
