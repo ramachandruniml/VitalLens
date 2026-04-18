@@ -1,8 +1,15 @@
 import { supabase } from './supabase'
-import { fetchLatestBiomarkers } from './fetchVisits'
 
 export async function generateDoctorQuestions(): Promise<string[]> {
-  const biomarkers = await fetchLatestBiomarkers()
+  // Fetch raw biomarkers from latest visit (preserving real 'high'/'low'/'normal' status)
+  const { data: visits, error } = await supabase
+    .from('visits')
+    .select('biomarkers(name, value, unit, status, explanation)')
+    .order('created_at', { ascending: false })
+    .limit(1)
+
+  if (error) throw error
+  const biomarkers = (visits?.[0] as { biomarkers: { name: string; value: number; unit: string; status: string; explanation: string }[] })?.biomarkers ?? []
   if (!biomarkers.length) return []
 
   const res = await fetch(

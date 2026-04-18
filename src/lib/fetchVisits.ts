@@ -26,6 +26,12 @@ function mapStatus(s: string): BiomarkerResult['status'] {
   return 'normal'
 }
 
+const STATUS_ORDER: Record<string, number> = { high: 0, low: 0, watch: 0, normal: 1 }
+
+function sortByStatus(biomarkers: RawBiomarker[]): RawBiomarker[] {
+  return [...biomarkers].sort((a, b) => (STATUS_ORDER[a.status] ?? 1) - (STATUS_ORDER[b.status] ?? 1))
+}
+
 // Orders by created_at so repeated same-PDF uploads get unique timestamps
 async function fetchAllVisits(): Promise<RawVisit[]> {
   const { data, error } = await supabase
@@ -43,7 +49,7 @@ export async function fetchLatestBiomarkers(): Promise<BiomarkerResult[]> {
   if (!visits.length) return []
 
   const latest = visits[visits.length - 1]
-  return latest.biomarkers.map(b => ({
+  return sortByStatus(latest.biomarkers).map(b => ({
     id: b.id,
     name: b.name,
     value: String(b.value),
@@ -115,7 +121,7 @@ export async function fetchAllVisitsGrouped(): Promise<VisitGroup[]> {
   const visits = await fetchAllVisits()
   return visits.map((visit, i) => {
     const categoryMap = new Map<string, BiomarkerResult[]>()
-    for (const b of visit.biomarkers) {
+    for (const b of sortByStatus(visit.biomarkers)) {
       const cat = b.category || 'General'
       if (!categoryMap.has(cat)) categoryMap.set(cat, [])
       categoryMap.get(cat)!.push({

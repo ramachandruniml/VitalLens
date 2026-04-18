@@ -83,6 +83,7 @@ export function UploadPage() {
 
       setBiomarkers(results)
       setState('done')
+      localStorage.removeItem('doctor-prep-questions')
       fetchVisitSummaries().then(setPastUploads).catch(() => {})
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Something went wrong')
