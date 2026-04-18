@@ -1,8 +1,10 @@
 import {
   CartesianGrid,
+  Label,
   Line,
   LineChart,
   ReferenceArea,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -80,16 +82,21 @@ export function TrendCharts({ trends }: TrendChartsProps) {
                   <ReferenceArea
                     y1={firstPoint.low}
                     y2={firstPoint.high}
-                    fill="rgba(45, 212, 191, 0.14)"
-                    strokeOpacity={0}
+                    fill="rgba(34, 197, 94, 0.15)"
+                    stroke="rgba(34, 197, 94, 0.4)"
+                    strokeDasharray="4 4"
                   />
+                  <ReferenceLine y={firstPoint.high} stroke="rgba(34, 197, 94, 0.5)" strokeDasharray="4 4">
+                    <Label value="Normal range" position="insideTopRight" fontSize={10} fill="rgba(34,197,94,0.8)" />
+                  </ReferenceLine>
+                  <ReferenceLine y={firstPoint.low} stroke="rgba(34, 197, 94, 0.5)" strokeDasharray="4 4" />
                   <Line
                     type="monotone"
                     dataKey="value"
-                    stroke="#0f766e"
+                    stroke="#38bdf8"
                     strokeWidth={3}
-                    dot={{ r: 4, fill: '#0f766e' }}
-                    activeDot={{ r: 6 }}
+                    dot={{ r: 5, fill: '#38bdf8', stroke: '#0f172a', strokeWidth: 2 }}
+                    activeDot={{ r: 7 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
