@@ -139,6 +139,29 @@ export async function fetchAllVisitsGrouped(): Promise<VisitGroup[]> {
   })
 }
 
+export type VisitSummary = {
+  id: string
+  uploadedAt: string
+  biomarkerCount: number
+  hasAbnormal: boolean
+}
+
+export async function fetchVisitSummaries(): Promise<VisitSummary[]> {
+  const { data, error } = await supabase
+    .from('visits')
+    .select('id, created_at, biomarkers(id, status)')
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+
+  return (data ?? []).map((v: { id: string; created_at: string; biomarkers: { id: string; status: string }[] }) => ({
+    id: v.id,
+    uploadedAt: v.created_at,
+    biomarkerCount: v.biomarkers.length,
+    hasAbnormal: v.biomarkers.some(b => b.status !== 'normal'),
+  }))
+}
+
 // Delete all visits (and their biomarkers) for the current user
 export async function clearAllVisits(): Promise<void> {
   const { data: visits, error } = await supabase.from('visits').select('id')

@@ -1,9 +1,10 @@
 import { AlertCircle, CheckCircle, FileText, Loader2, Sparkles, UploadCloud, X } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { PageIntro } from '../components/PageIntro'
 import { analyzeLab, type Biomarker } from '../lib/analyzeLab'
 import { extractTextFromPDF } from '../lib/extractText'
+import { fetchVisitSummaries, type VisitSummary } from '../lib/fetchVisits'
 import { saveVisit } from '../lib/saveVisit'
 import { supabase } from '../lib/supabase'
 
@@ -26,6 +27,11 @@ export function UploadPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [biomarkers, setBiomarkers] = useState<Biomarker[]>([])
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [pastUploads, setPastUploads] = useState<VisitSummary[]>([])
+
+  useEffect(() => {
+    fetchVisitSummaries().then(setPastUploads).catch(() => {})
+  }, [])
 
   const handleDrop = useCallback((acceptedFiles: File[]) => {
     const [file] = acceptedFiles
@@ -77,6 +83,7 @@ export function UploadPage() {
 
       setBiomarkers(results)
       setState('done')
+      fetchVisitSummaries().then(setPastUploads).catch(() => {})
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Something went wrong')
       setState('error')
@@ -231,6 +238,35 @@ export function UploadPage() {
           )}
         </aside>
       </div>
+
+      {pastUploads.length > 0 && (
+        <div style={{ marginTop: '2rem' }}>
+          <p className="eyebrow" style={{ marginBottom: '0.75rem' }}>Previous uploads</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            {pastUploads.map((u, i) => (
+              <div key={u.id} className="panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <FileText size={16} style={{ color: '#94a3b8' }} />
+                  <span style={{ fontSize: '0.9rem' }}>Upload {pastUploads.length - i} — {u.uploadedAt.slice(0, 10)}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{u.biomarkerCount} biomarkers</span>
+                  <span style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    padding: '2px 8px',
+                    borderRadius: '999px',
+                    background: u.hasAbnormal ? '#7f1d1d' : '#14532d',
+                    color: u.hasAbnormal ? '#f87171' : '#4ade80',
+                  }}>
+                    {u.hasAbnormal ? 'Review' : 'Normal'}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   )
 }
