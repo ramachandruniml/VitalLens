@@ -1,73 +1,181 @@
-# React + TypeScript + Vite
+# VitalLens
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> *"Every year, millions of people get a lab report, stare at it for 30 seconds, and put it in a drawer — because they have no idea what it means."*
 
-Currently, two official plugins are available:
+VitalLens is an AI-powered health data companion that turns your lab reports into plain-English insights. Upload a PDF, get every biomarker extracted and explained, track your health trends over time, and walk into your next doctor's appointment with the right questions.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **PDF Upload** — Drag and drop any lab report PDF. Supports both text-based and image-based (scanned) PDFs
+- **AI Extraction** — Claude reads your report and extracts every biomarker with values, units, reference ranges, and status
+- **Biomarker Dashboard** — Results grouped by medical category (Hematology, Liver Function, Thyroid, etc.) with plain-English explanations and pronunciation audio for each metric
+- **Trend Charts** — Upload multiple reports over time and watch your biomarkers trend across visits, with a green normal range band overlaid on every chart
+- **Doctor Prep** — AI-generated questions tailored to your concerning results, with a biomarker badge on each question, ready to copy or print
+- **Persistent History** — All uploads saved to your account via Supabase — data never disappears on refresh
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Tech Stack
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+| Layer | Technology |
+|---|---|
+| Frontend | React, TypeScript, Vite |
+| Routing | React Router |
+| Charts | Recharts |
+| Icons | Lucide React |
+| PDF Parsing | pdfjs-dist |
+| File Upload | react-dropzone |
+| Auth & Database | Supabase (Postgres + RLS) |
+| Edge Functions | Supabase Edge Functions (Deno) |
+| AI | Claude Sonnet 4.6 (Anthropic) |
+| Audio | Web Speech API (browser-native) |
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Getting Started
+
+### Prerequisites
+- Node.js 18+
+- A [Supabase](https://supabase.com) project
+- An [Anthropic](https://console.anthropic.com) API key
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/ramachandruniml/VitalLens.git
+cd VitalLens
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Set up environment variables
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Create a `.env` file in the root:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your_anon_key
+VITE_ANTHROPIC_API_KEY=your_anthropic_key
 ```
+
+### 3. Set up the database
+
+Run this in your Supabase **SQL Editor**:
+
+```sql
+create table if not exists visits (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users,
+  visit_date date,
+  raw_text text,
+  created_at timestamp default now()
+);
+
+create table if not exists biomarkers (
+  id uuid primary key default gen_random_uuid(),
+  visit_id uuid references visits(id),
+  name text,
+  value numeric,
+  unit text,
+  reference_low numeric,
+  reference_high numeric,
+  status text,
+  explanation text,
+  category text default 'General',
+  created_at timestamp default now()
+);
+
+alter table visits enable row level security;
+alter table biomarkers enable row level security;
+
+drop policy if exists "Users can manage their own visits" on visits;
+create policy "Users can manage their own visits"
+on visits for all using (auth.uid() = user_id);
+
+drop policy if exists "Users can manage their own biomarkers" on biomarkers;
+create policy "Users can manage their own biomarkers"
+on biomarkers for all using (
+  exists (
+    select 1 from visits
+    where visits.id = biomarkers.visit_id
+    and visits.user_id = auth.uid()
+  )
+);
+```
+
+### 4. Deploy Edge Functions
+
+```bash
+npm install supabase --save-dev
+npx supabase login
+npx supabase link --project-ref your-project-ref
+npx supabase secrets set ANTHROPIC_API_KEY=your_anthropic_key
+npx supabase functions deploy analyze-lab
+npx supabase functions deploy doctor-prep
+```
+
+### 5. Run locally
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173).
+
+---
+
+## Branch Structure
+
+```
+main          ← stable, demo-ready
+dev           ← integration branch
+person1/ui    ← frontend / design
+person2/ai    ← backend / AI pipeline
+```
+
+Workflow: feature branches → PR into `dev` → PR into `main` when stable.
+
+---
+
+## How It Works
+
+```
+User uploads PDF
+      ↓
+pdfjs extracts text (falls back to canvas render for image PDFs)
+      ↓
+Supabase Edge Function sends content to Claude
+      ↓
+Claude returns structured JSON: name, value, unit, status, explanation, category
+      ↓
+Saved to Supabase (visits + biomarkers tables)
+      ↓
+Dashboard, Trends, and Doctor Prep pages read from Supabase
+```
+
+---
+
+## The Problem We're Solving
+
+The healthcare system generates enormous amounts of personal health data but delivers almost none of the understanding. You wait weeks for results, get a PDF of numbers, and are expected to make sense of it alone.
+
+VitalLens is the translation layer between your lab report and your brain.
+
+---
+
+## Future Roadmap
+
+- Direct lab integrations (Quest Diagnostics, LabCorp)
+- Wearable data (Apple Health, Oura Ring)
+- Doctor sharing — send your prep sheet directly to your provider
+- Genetic data integration (23andMe)
+- Medication interaction alerts
+- Family accounts for caregivers
+- Mobile app
+
+---
+
+## License
+
+MIT
