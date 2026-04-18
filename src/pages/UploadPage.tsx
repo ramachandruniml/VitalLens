@@ -190,7 +190,7 @@ export function UploadPage() {
           <div className="upload-state-card">
             <span className={`state-dot state-dot-${state === 'done' ? 'selected' : state === 'error' ? 'error' : state === 'idle' ? 'idle' : 'selected'}`} />
             <div>
-              <strong>{STATUS_LABELS[state]}</strong>
+              {state !== 'idle' && <strong>{STATUS_LABELS[state]}</strong>}
               {isProcessing && <p>This may take a few seconds…</p>}
               {state === 'done' && <p>{biomarkers.length} biomarkers extracted and saved.</p>}
               {errorMsg && <p style={{ color: '#f87171' }}>{errorMsg}</p>}
