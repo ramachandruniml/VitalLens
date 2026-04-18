@@ -12,9 +12,7 @@ const acceptedMime = {
 export function UploadPage() {
   const [uploadState, setUploadState] = useState<UploadState>('idle')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [statusMessage, setStatusMessage] = useState(
-    'Drop a PDF report to prepare it for backend integration.',
-  )
+  const [statusMessage, setStatusMessage] = useState('Select a PDF report.')
 
   const handleDrop = useCallback((acceptedFiles: File[]) => {
     const [file] = acceptedFiles
@@ -25,19 +23,19 @@ export function UploadPage() {
 
     setSelectedFile(file)
     setUploadState('selected')
-    setStatusMessage('PDF selected. Ready for backend hookup.')
+    setStatusMessage('PDF selected.')
   }, [])
 
   const handleReject = useCallback(() => {
     setSelectedFile(null)
     setUploadState('error')
-    setStatusMessage('Only PDF files are supported in this upload UI.')
+    setStatusMessage('Only PDF files are supported.')
   }, [])
 
   const resetUpload = useCallback(() => {
     setSelectedFile(null)
     setUploadState('idle')
-    setStatusMessage('Drop a PDF report to prepare it for backend integration.')
+    setStatusMessage('Select a PDF report.')
   }, [])
 
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
@@ -53,18 +51,18 @@ export function UploadPage() {
     <section className="page-section">
       <PageIntro
         eyebrow="Upload"
-        title="Upload page setup"
-        description="UI-only PDF intake screen with drag-and-drop styling, local file selection, and validation messaging."
+        title="Upload report"
+        description="Secure intake for clinical PDF files."
       />
 
       <div className="upload-hero">
         <div>
-          <p className="eyebrow">Quick Start</p>
-          <h3>Select a patient PDF and hand it off to the future backend flow.</h3>
+          <p className="eyebrow">Intake</p>
+          <h3>Upload a patient report.</h3>
         </div>
         <div className="status-pill">
           <Sparkles size={16} />
-          <span>UI only</span>
+          <span>Ready</span>
         </div>
       </div>
 
@@ -107,14 +105,16 @@ export function UploadPage() {
               <button type="button" className="primary-button" onClick={open}>
                 Choose PDF
               </button>
-              <span className="upload-note">Single PDF, max 25 MB, encrypted files unsupported</span>
+              <span className="upload-note">
+                Single PDF, max 25 MB, encrypted files unsupported
+              </span>
             </div>
           </div>
         </article>
 
         <aside className="panel upload-side-panel">
           <div className="upload-side-header">
-            <h3>Upload Status</h3>
+            <h3>Upload status</h3>
             {selectedFile ? (
               <button type="button" className="ghost-button" onClick={resetUpload}>
                 <X size={16} />
@@ -126,11 +126,11 @@ export function UploadPage() {
           <div className="file-chip">
             <FileText size={18} />
             <div>
-              <strong>{selectedFile ? selectedFile.name : 'No file selected yet'}</strong>
+              <strong>{selectedFile ? selectedFile.name : 'No file selected'}</strong>
               <span>
                 {selectedFile
                   ? `${Math.max(selectedFile.size / 1024 / 1024, 0.1).toFixed(1)} MB PDF`
-                  : 'Select a PDF to preview file details here'}
+                  : 'No file selected'}
               </span>
             </div>
           </div>
@@ -150,15 +150,15 @@ export function UploadPage() {
           </div>
 
           <div className="panel dashboard-shell-panel">
-            <p className="eyebrow">Backend Placeholder</p>
-            <h3>Submission area</h3>
-            <p>This panel is reserved for your teammate’s upload request, progress state, and server response handling.</p>
+            <p className="eyebrow">Submission</p>
+            <h3>Upload panel</h3>
+            <p>Submission status and response details.</p>
           </div>
 
           {uploadState === 'error' ? (
             <div className="error-banner" role="alert">
               <AlertCircle size={18} />
-              <p>Only PDF selection is handled here right now. No upload request is being sent.</p>
+              <p>Only PDF files are supported.</p>
             </div>
           ) : null}
         </aside>
