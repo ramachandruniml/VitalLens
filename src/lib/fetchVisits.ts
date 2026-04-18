@@ -85,6 +85,29 @@ export async function fetchBiomarkerTrends(): Promise<BiomarkerTrend[]> {
   return Array.from(map.values())
 }
 
+// All visits with their biomarkers for the dashboard history view
+export type VisitGroup = {
+  id: string
+  label: string
+  biomarkers: BiomarkerResult[]
+}
+
+export async function fetchAllVisitsGrouped(): Promise<VisitGroup[]> {
+  const visits = await fetchAllVisits()
+  return visits.map((visit, i) => ({
+    id: visit.id,
+    label: `Upload ${i + 1} — ${visit.created_at.slice(0, 10)}`,
+    biomarkers: visit.biomarkers.map(b => ({
+      id: b.id,
+      name: b.name,
+      value: String(b.value),
+      unit: b.unit,
+      status: mapStatus(b.status),
+      explanation: b.explanation,
+    })),
+  }))
+}
+
 // Delete all visits (and their biomarkers) for the current user
 export async function clearAllVisits(): Promise<void> {
   const { data: visits, error } = await supabase.from('visits').select('id')

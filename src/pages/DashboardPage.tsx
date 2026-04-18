@@ -1,17 +1,16 @@
 import { useEffect, useState } from 'react'
 import { BiomarkerCards } from '../components/BiomarkerCards'
 import { PageIntro } from '../components/PageIntro'
-import { clearAllVisits, fetchLatestBiomarkers } from '../lib/fetchVisits'
-import type { BiomarkerResult } from '../types/biomarkers'
+import { clearAllVisits, fetchAllVisitsGrouped, type VisitGroup } from '../lib/fetchVisits'
 
 export function DashboardPage() {
-  const [biomarkers, setBiomarkers] = useState<BiomarkerResult[]>([])
+  const [visits, setVisits] = useState<VisitGroup[]>([])
   const [loading, setLoading] = useState(true)
   const [clearing, setClearing] = useState(false)
 
   useEffect(() => {
-    fetchLatestBiomarkers()
-      .then(setBiomarkers)
+    fetchAllVisitsGrouped()
+      .then(v => setVisits(v.slice().reverse())) // newest first
       .finally(() => setLoading(false))
   }, [])
 
@@ -20,7 +19,7 @@ export function DashboardPage() {
     setClearing(true)
     try {
       await clearAllVisits()
-      setBiomarkers([])
+      setVisits([])
     } finally {
       setClearing(false)
     }
@@ -31,15 +30,15 @@ export function DashboardPage() {
       <PageIntro
         eyebrow="Dashboard"
         title="Biomarker dashboard"
-        description="A structured view for biomarker results and clinical summaries."
+        description="All uploaded lab reports and their biomarker results."
       />
 
       <div className="dashboard-shell">
         <article className="panel dashboard-shell-panel dashboard-shell-hero">
           <p className="eyebrow">Overview</p>
-          <h3>Latest results</h3>
-          <p>Most recent lab report biomarkers.</p>
-          {biomarkers.length > 0 && (
+          <h3>{visits.length} report{visits.length !== 1 ? 's' : ''} uploaded</h3>
+          <p>Each upload is shown below with its biomarkers.</p>
+          {visits.length > 0 && (
             <button
               onClick={handleClear}
               disabled={clearing}
@@ -64,8 +63,17 @@ export function DashboardPage() {
           <div className="panel biomarker-card" style={{ color: '#94a3b8', padding: '2rem' }}>
             Loading…
           </div>
+        ) : visits.length === 0 ? (
+          <div className="panel biomarker-card" style={{ color: '#94a3b8', padding: '2rem' }}>
+            No reports uploaded yet.
+          </div>
         ) : (
-          <BiomarkerCards biomarkers={biomarkers} />
+          visits.map(visit => (
+            <div key={visit.id}>
+              <p className="eyebrow" style={{ margin: '1.5rem 0 0.5rem' }}>{visit.label}</p>
+              <BiomarkerCards biomarkers={visit.biomarkers} />
+            </div>
+          ))
         )}
       </div>
     </section>
