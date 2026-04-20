@@ -11,21 +11,21 @@ VitalLens is an AI-powered health data companion that turns your lab reports int
 <table>
   <tr>
     <td align="center" width="50%">
-      <img src="screenshots/Screenshot 2026-04-20 at 4.25.51 PM.png" alt="Upload" />
+      <img src="Screenshots/Screenshot 2026-04-20 at 4.25.51 PM.png" alt="Upload" />
       <br /><strong>Upload</strong> — Drag and drop any lab report PDF
     </td>
     <td align="center" width="50%">
-      <img src="screenshots/Screenshot 2026-04-20 at 4.26.04 PM.png" alt="Biomarker Dashboard" />
+      <img src="Screenshots/Screenshot 2026-04-20 at 4.26.04 PM.png" alt="Biomarker Dashboard" />
       <br /><strong>Biomarker Dashboard</strong> — Results grouped by category with plain-English explanations
     </td>
   </tr>
   <tr>
     <td align="center" width="50%">
-      <img src="screenshots/Screenshot 2026-04-20 at 4.26.15 PM.png" alt="Trend Charts" />
+      <img src="Screenshots/Screenshot 2026-04-20 at 4.26.15 PM.png" alt="Trend Charts" />
       <br /><strong>Trend Charts</strong> — Longitudinal view of biomarkers over time with normal range bands
     </td>
     <td align="center" width="50%">
-      <img src="screenshots/Screenshot 2026-04-20 at 4.26.30 PM.png" alt="Doctor Prep" />
+      <img src="Screenshots/Screenshot 2026-04-20 at 4.26.30 PM.png" alt="Doctor Prep" />
       <br /><strong>Doctor Prep</strong> — AI-generated questions tailored to your concerning results
     </td>
   </tr>
