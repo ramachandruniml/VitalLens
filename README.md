@@ -1,4 +1,4 @@
-# VitalLens
+# VitalLens (2nd @ BadgerAI)
 
 > *"Every year, millions of people get a lab report, stare at it for 30 seconds, and put it in a drawer — because they have no idea what it means."*
 
