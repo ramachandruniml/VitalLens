@@ -49,7 +49,7 @@ export function DoctorPrepPage() {
           {error}
           <br />
           <button
-            onClick={load}
+            onClick={() => load()}
             style={{ marginTop: '1rem', padding: '0.4rem 0.8rem', borderRadius: '6px', border: 'none', background: '#334155', color: '#f1f5f9', cursor: 'pointer' }}
           >
             Retry
